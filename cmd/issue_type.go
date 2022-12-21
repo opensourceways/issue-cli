@@ -22,11 +22,11 @@ type issueOption struct {
 	file bool
 }
 
-const issueExample = `
-# get all issue type list
-issue-cli get issue-type or issue get it
-# get issue template(default print os.Stdout)
-issue-cli get it -n [name]
+var issueExample = `
+  # get all issue type list
+  issue-cli get issue-type or issue get it
+  # get issue template(default print os.Stdout)
+  issue-cli get it -n [name]
 `
 
 func newIssueOption(s Streams, h util.ReqImpl) *issueOption {
@@ -42,6 +42,7 @@ func newIssueTypeCmd(s Streams, h util.ReqImpl) *cobra.Command {
 		Short:   "get openeuler community issue type",
 		Example: issueExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			checkErr(o.Validate(cmd, args))
 			checkErr(o.Run())
 		},
 	}
@@ -50,6 +51,13 @@ func newIssueTypeCmd(s Streams, h util.ReqImpl) *cobra.Command {
 	cmd.Flags().BoolVarP(&o.file, "file", "f", o.file, "If true, output the content to a file")
 
 	return cmd
+}
+
+func (i *issueOption) Validate(cmd *cobra.Command, args []string) error {
+	if len(args) != 0 {
+		return util.UsageErrorf(cmd, "Unexpected args: %v", args)
+	}
+	return nil
 }
 
 func (i *issueOption) Run() error {

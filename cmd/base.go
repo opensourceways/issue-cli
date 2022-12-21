@@ -10,8 +10,9 @@ import (
 )
 
 var issue = &cobra.Command{
-	Use:  "issue-cli",
-	Long: "issue command can create openeuler issue",
+	Use:   "issue-cli",
+	Long:  "issue-cli command can create openeuler issue",
+	Short: "issue-cli command can create openeuler issue",
 	Run: func(cmd *cobra.Command, args []string) {
 		checkErr(cmd.Help())
 	},
