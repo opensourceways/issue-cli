@@ -17,6 +17,7 @@ func newGetOption(s base) *getOption {
 var getExample = `
   # List all repo in output
   issue-cli get repo [options]
+
   # List all issue_type in output
   issue-cli get issue-type [options]
 	`

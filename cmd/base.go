@@ -11,8 +11,8 @@ import (
 
 var issue = &cobra.Command{
 	Use:   "issue-cli",
-	Long:  "issue-cli command can create openeuler issue",
-	Short: "issue-cli command can create openeuler issue",
+	Long:  "issue-cli command can create openeuler resources, example: issue ...",
+	Short: "issue-cli command can create openeuler resources",
 	Run: func(cmd *cobra.Command, args []string) {
 		checkErr(cmd.Help())
 	},
@@ -20,7 +20,7 @@ var issue = &cobra.Command{
 
 func checkErr(err error) {
 	if err != nil {
-		_, _ = fmt.Fprint(os.Stderr, err.Error()+"\n")
+		_, _ = fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 }
@@ -80,6 +80,7 @@ func Cmd() *cobra.Command {
 		{
 			Commands: []*cobra.Command{
 				newCmdGet(s),
+				newCmdCreate(s),
 			},
 		},
 	}
@@ -88,6 +89,9 @@ func Cmd() *cobra.Command {
 
 	//not create a default 'completion' command
 	issue.CompletionOptions.DisableDefaultCmd = true
+	issue.SetIn(s.In)
+	issue.SetOut(s.Out)
+	issue.SetErr(s.ErrOut)
 
 	return issue
 }

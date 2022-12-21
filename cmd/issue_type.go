@@ -14,7 +14,7 @@ import (
 
 const basefile = "%s.txt"
 
-type issueOption struct {
+type issueTypeOption struct {
 	Streams
 	h util.ReqImpl
 
@@ -23,18 +23,19 @@ type issueOption struct {
 }
 
 var issueExample = `
-  # get all issue type list
+  # Get all issue type list
   issue-cli get issue-type or issue get it
-  # get issue template(default print os.Stdout)
+
+  # Get issue template(default print os.Stdout)
   issue-cli get it -n [name]
 `
 
-func newIssueOption(s Streams, h util.ReqImpl) *issueOption {
-	return &issueOption{Streams: s, h: h}
+func newIssueTypeOption(s Streams, h util.ReqImpl) *issueTypeOption {
+	return &issueTypeOption{Streams: s, h: h}
 }
 
 func newIssueTypeCmd(s Streams, h util.ReqImpl) *cobra.Command {
-	o := newIssueOption(s, h)
+	o := newIssueTypeOption(s, h)
 
 	cmd := &cobra.Command{
 		Use:     "issue_type",
@@ -53,14 +54,14 @@ func newIssueTypeCmd(s Streams, h util.ReqImpl) *cobra.Command {
 	return cmd
 }
 
-func (i *issueOption) Validate(cmd *cobra.Command, args []string) error {
+func (i *issueTypeOption) Validate(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
 		return util.UsageErrorf(cmd, "Unexpected args: %v", args)
 	}
 	return nil
 }
 
-func (i *issueOption) Run() error {
+func (i *issueTypeOption) Run() error {
 	if len(i.name) > 0 {
 		return i.uniqueOne()
 	}
@@ -98,7 +99,7 @@ func (i *issueOption) Run() error {
 	return err
 }
 
-func (i *issueOption) uniqueOne() error {
+func (i *issueTypeOption) uniqueOne() error {
 	u := "https://quickissue.openeuler.org/api-issues/issues/types"
 	var v = url.Values{}
 	v.Add("name", i.name)
@@ -131,13 +132,13 @@ func (i *issueOption) uniqueOne() error {
 	return err
 }
 
-func (i *issueOption) writeFile(content string) error {
+func (i *issueTypeOption) writeFile(content string) error {
 	var file = fmt.Sprintf(basefile, "issue")
 
 	return ioutil.WriteFile(file, []byte(content), fs.ModePerm)
 }
 
-func (i *issueOption) printContextHeaders(out io.Writer) error {
+func (i *issueTypeOption) printContextHeaders(out io.Writer) error {
 	columnNames := []any{"UNIQUEID", "NAME"}
 	_, err := fmt.Fprintf(out, "%-15s\t%s\n", columnNames...)
 	return err
