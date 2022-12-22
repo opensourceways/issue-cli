@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,28 +20,24 @@ var transport = &http.Transport{
 	TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
 }
 
-type ReqImpl interface {
-	CustomRequest(url, method string, bytesData interface{}, headers map[string]string, u url.Values, data interface{}) ([]byte, error)
-}
-
-type request struct {
+type Request struct {
 	c *http.Client
 }
 
-func NewRequest(t *http.Transport) ReqImpl {
+func NewRequest(t *http.Transport) *Request {
 	if t == nil {
 		t = transport
 	}
 
-	return &request{c: &http.Client{Transport: t}}
+	return &Request{c: &http.Client{Transport: t}}
 }
 
-func (r *request) CustomRequest(url, method string, bytesData interface{}, headers map[string]string, u url.Values, data interface{}) ([]byte, error) {
+func (r *Request) CustomRequest(url, method string, bytesData interface{}, headers map[string]string, u url.Values, data interface{}) ([]byte, error) {
 	var (
 		bys []byte
 		err error
 	)
-	bys, err = r.noTryRequest(r.geturl(url, u), strings.ToUpper(method), bytesData, headers)
+	bys, err = r.noTryRequest(r.getUrl(url, u), strings.ToUpper(method), bytesData, headers)
 	if err != nil {
 		return nil, err
 	}
@@ -55,8 +50,8 @@ func (r *request) CustomRequest(url, method string, bytesData interface{}, heade
 }
 
 // noTryRequest 所有公用的http请求无重试
-func (r *request) noTryRequest(url, method string, bytesData interface{}, headers map[string]string) (resByte []byte, err error) {
-	req, err := http.NewRequest(method, url, r.getbody(bytesData))
+func (r *Request) noTryRequest(url, method string, bytesData interface{}, headers map[string]string) (resByte []byte, err error) {
+	req, err := http.NewRequest(method, url, r.getBody(bytesData))
 	if err != nil {
 		return
 	}
@@ -71,13 +66,13 @@ func (r *request) noTryRequest(url, method string, bytesData interface{}, header
 	defer resp.Body.Close()
 
 	if resp.StatusCode > http.StatusMultipleChoices || resp.Body == nil {
-		return nil, errors.New(fmt.Sprintf("request err %s", resp.Status))
+		return nil, fmt.Errorf("request err %s", resp.Status)
 	}
 	resByte, err = io.ReadAll(resp.Body)
 	return
 }
 
-func (r *request) getbody(bytesData interface{}) io.Reader {
+func (r *Request) getBody(bytesData interface{}) io.Reader {
 	var body = io.Reader(nil)
 	switch t := bytesData.(type) {
 	case []byte:
@@ -94,7 +89,7 @@ func (r *request) getbody(bytesData interface{}) io.Reader {
 	return body
 }
 
-func (r *request) geturl(u string, values url.Values) string {
+func (r *Request) getUrl(u string, values url.Values) string {
 	path, err := url.Parse(u)
 	if err != nil {
 		return u

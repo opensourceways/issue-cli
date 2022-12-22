@@ -1,17 +1,15 @@
 package cmd
 
 import (
-	"github.com/opensourceways/issue-cli/util"
 	"github.com/spf13/cobra"
 )
 
 type getOption struct {
 	Streams
-	h util.ReqImpl
 }
 
 func newGetOption(s base) *getOption {
-	return &getOption{Streams: s.Streams, h: s.ReqImpl}
+	return &getOption{Streams: s.Streams}
 }
 
 var getExample = `
@@ -35,8 +33,8 @@ func newCmdGet(s base) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(newRepoCmd(o.Streams, o.h))
-	cmd.AddCommand(newIssueTypeCmd(o.Streams, o.h))
+	cmd.AddCommand(newRepoCmd(o.Streams))
+	cmd.AddCommand(newIssueTypeCmd(o.Streams))
 
 	return cmd
 }

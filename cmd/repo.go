@@ -6,13 +6,14 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/opensourceways/issue-cli/util"
 	"github.com/spf13/cobra"
+
+	"github.com/opensourceways/issue-cli/util"
 )
 
 type repoOption struct {
 	Streams
-	h util.ReqImpl
+	h *util.Request
 
 	page int
 	size int
@@ -20,12 +21,12 @@ type repoOption struct {
 	name string
 }
 
-func newRepoOption(s Streams, h util.ReqImpl) *repoOption {
-	return &repoOption{Streams: s, h: h}
+func newRepoOption(s Streams) *repoOption {
+	return &repoOption{Streams: s, h: util.NewRequest(nil)}
 }
 
-func newRepoCmd(s Streams, h util.ReqImpl) *cobra.Command {
-	o := newRepoOption(s, h)
+func newRepoCmd(s Streams) *cobra.Command {
+	o := newRepoOption(s)
 
 	cmd := &cobra.Command{
 		Use:   "repo [options]",
@@ -45,7 +46,6 @@ func newRepoCmd(s Streams, h util.ReqImpl) *cobra.Command {
 }
 
 func (o *repoOption) Run() error {
-	u := "https://quickissue.openeuler.org/api-issues/repos/"
 	var v = url.Values{}
 	v.Add("page", strconv.Itoa(o.page))
 	v.Add("per_page", strconv.Itoa(o.size))
@@ -59,7 +59,7 @@ func (o *repoOption) Run() error {
 		} `json:"data"`
 	}{}
 
-	_, err := o.h.CustomRequest(u, "GET", nil, nil, v, &res)
+	_, err := o.h.CustomRequest(RepoUrl, "GET", nil, nil, v, &res)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (o *repoOption) Run() error {
 
 func (o *repoOption) Validate(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
-		return util.UsageErrorf(cmd, "Unexpected args: %v", args)
+		return util.UsageErrorf(cmd, "unexpected args: %v", args)
 	}
 	return nil
 }

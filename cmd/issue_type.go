@@ -8,15 +8,16 @@ import (
 	"net/url"
 	"sort"
 
-	"github.com/opensourceways/issue-cli/util"
 	"github.com/spf13/cobra"
+
+	"github.com/opensourceways/issue-cli/util"
 )
 
 const basefile = "%s.txt"
 
 type issueTypeOption struct {
 	Streams
-	h util.ReqImpl
+	h *util.Request
 
 	name string
 	file bool
@@ -30,12 +31,12 @@ var issueExample = `
   issue-cli get it -n [name]
 `
 
-func newIssueTypeOption(s Streams, h util.ReqImpl) *issueTypeOption {
-	return &issueTypeOption{Streams: s, h: h}
+func newIssueTypeOption(s Streams) *issueTypeOption {
+	return &issueTypeOption{Streams: s, h: util.NewRequest(nil)}
 }
 
-func newIssueTypeCmd(s Streams, h util.ReqImpl) *cobra.Command {
-	o := newIssueTypeOption(s, h)
+func newIssueTypeCmd(s Streams) *cobra.Command {
+	o := newIssueTypeOption(s)
 
 	cmd := &cobra.Command{
 		Use:     "issue_type",
@@ -56,7 +57,7 @@ func newIssueTypeCmd(s Streams, h util.ReqImpl) *cobra.Command {
 
 func (i *issueTypeOption) Validate(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
-		return util.UsageErrorf(cmd, "Unexpected args: %v", args)
+		return util.UsageErrorf(cmd, "unexpected args: %v", args)
 	}
 	return nil
 }
@@ -66,7 +67,6 @@ func (i *issueTypeOption) Run() error {
 		return i.uniqueOne()
 	}
 
-	u := "https://quickissue.openeuler.org/api-issues/issues/types"
 	var res = struct {
 		baseResp
 		Data []struct {
@@ -75,7 +75,7 @@ func (i *issueTypeOption) Run() error {
 		}
 	}{}
 
-	_, err := i.h.CustomRequest(u, "GET", nil, nil, nil, &res)
+	_, err := i.h.CustomRequest(IssueTypeUrl, "GET", nil, nil, nil, &res)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,6 @@ func (i *issueTypeOption) Run() error {
 }
 
 func (i *issueTypeOption) uniqueOne() error {
-	u := "https://quickissue.openeuler.org/api-issues/issues/types"
 	var v = url.Values{}
 	v.Add("name", i.name)
 	var res = struct {
@@ -112,7 +111,7 @@ func (i *issueTypeOption) uniqueOne() error {
 		}
 	}{}
 
-	_, err := i.h.CustomRequest(u, "GET", nil, nil, v, &res)
+	_, err := i.h.CustomRequest(IssueTypeUrl, "GET", nil, nil, v, &res)
 	if err != nil {
 		return err
 	}

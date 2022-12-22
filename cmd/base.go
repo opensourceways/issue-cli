@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/opensourceways/issue-cli/util"
 	"github.com/spf13/cobra"
 )
 
@@ -41,7 +40,6 @@ func (g CommandGroups) Add(c *cobra.Command) {
 
 type base struct {
 	Streams
-	util.ReqImpl
 }
 
 type baseResp struct {
@@ -67,20 +65,13 @@ type Streams struct {
 }
 
 func Cmd() *cobra.Command {
-	s := base{
-		Streams: Streams{
-			In:     os.Stdin,
-			Out:    os.Stdout,
-			ErrOut: os.Stderr,
-		},
-		ReqImpl: util.NewRequest(nil),
-	}
+	b := base{Streams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr}}
 
 	group := CommandGroups{
 		{
 			Commands: []*cobra.Command{
-				newCmdGet(s),
-				newCmdCreate(s),
+				newCmdGet(b),
+				newCmdCreate(b),
 			},
 		},
 	}
@@ -89,9 +80,10 @@ func Cmd() *cobra.Command {
 
 	//not create a default 'completion' command
 	issue.CompletionOptions.DisableDefaultCmd = true
-	issue.SetIn(s.In)
-	issue.SetOut(s.Out)
-	issue.SetErr(s.ErrOut)
+
+	issue.SetIn(b.In)
+	issue.SetOut(b.Out)
+	issue.SetErr(b.ErrOut)
 
 	return issue
 }

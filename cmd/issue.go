@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/opensourceways/issue-cli/util"
 	"github.com/spf13/cobra"
+
+	"github.com/opensourceways/issue-cli/util"
 )
 
 type issueOption struct {
 	Streams
-	h util.ReqImpl
+	h *util.Request
 
 	filepath string
 	title    string
@@ -22,7 +23,7 @@ type issueOption struct {
 }
 
 func newIssueOption(s base) *issueOption {
-	return &issueOption{Streams: s.Streams, h: s.ReqImpl}
+	return &issueOption{Streams: s.Streams, h: util.NewRequest(nil)}
 }
 
 var createExample = `
@@ -53,7 +54,7 @@ func newCmdIssue(s base) *cobra.Command {
 
 func (c *issueOption) Validate(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
-		return util.UsageErrorf(cmd, "Unexpected args: %v", args)
+		return util.UsageErrorf(cmd, "unexpected args: %v", args)
 	}
 
 	if len(c.filepath) <= 0 {
@@ -83,10 +84,9 @@ func (c *issueOption) Run() error {
 		return err
 	}
 
-	u := "https://quickissue.openeuler.org/api-issues/verify"
 	var res = baseResp{}
 
-	_, err = c.h.CustomRequest(u, "post", fmt.Sprintf(`{"email":"%s"}`, email), nil, nil, &res)
+	_, err = c.h.CustomRequest(VerifyUrl, "post", fmt.Sprintf(`{"email":"%s"}`, email), nil, nil, &res)
 	if err != nil {
 		return err
 	}
@@ -120,8 +120,6 @@ func (c *issueOption) createIssue() error {
 		Code    string `json:"code"`
 	}{Id: c.repoid, Title: c.title, Body: string(bys), Email: c.email, Code: c.code, IssueId: c.issueid}
 
-	url := "https://quickissue.openeuler.org/api-issues/issues"
-
 	bys, err = json.Marshal(req)
 	if err != nil {
 		return err
@@ -131,7 +129,7 @@ func (c *issueOption) createIssue() error {
 		baseResp
 	}{}
 
-	_, err = c.h.CustomRequest(url, "POST", bys, nil, nil, &res)
+	_, err = c.h.CustomRequest(CreateIssueUrl, "POST", bys, nil, nil, &res)
 	if err != nil {
 		return err
 	}

@@ -1,17 +1,17 @@
 package cmd
 
 import (
-	"github.com/opensourceways/issue-cli/util"
 	"github.com/spf13/cobra"
+
+	"github.com/opensourceways/issue-cli/util"
 )
 
 type createOption struct {
 	Streams
-	h util.ReqImpl
 }
 
 func newCreateOption(s base) *createOption {
-	return &createOption{Streams: s.Streams, h: s.ReqImpl}
+	return &createOption{Streams: s.Streams}
 }
 
 func newCmdCreate(s base) *cobra.Command {
